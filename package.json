@@ -9,8 +9,8 @@
     "url": "https://github.com/cermak-petr/act-executions-merge"
   },
   "dependencies": {
-    "apify": "latest",
-    "bluebird": "latest",
-    "underscore": "latest"
+    "apify": "^0.4.37",
+    "bluebird": "^3.5.1",
+    "underscore": "^1.8.3"
   }
 }
