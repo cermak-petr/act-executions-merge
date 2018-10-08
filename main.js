@@ -17,21 +17,27 @@ function processResults(results, output){
 }
 
 async function getExecutionResults(execId, useDataset){
-    let output = [];
-    const limit = 200;
-    let total = null, offset = 0;
-    while(total === null || offset < total){
-        const results = await Apify.client.crawlers.getExecutionResults({executionId: execId, limit: limit, offset: offset});
-        if(useDataset){
-            const data = processResults(results, []);
-            await Apify.pushData(data);
-            console.log('fetched results: ' + data.length);
+    try{
+        let output = [];
+        const limit = 200;
+        let total = null, offset = 0;
+        while(total === null || offset < total){
+            const results = await Apify.client.crawlers.getExecutionResults({executionId: execId, limit: limit, offset: offset});
+            if(useDataset){
+                const data = processResults(results, []);
+                await Apify.pushData(data);
+                console.log('fetched results: ' + data.length);
+            }
+            else{output = processResults(results, output);}
+            total = results.total;
+            offset += limit;
         }
-        else{output = processResults(results, output);}
-        total = results.total;
-        offset += limit;
+        return output;
     }
-    return output;
+    catch(e){
+        console.log(e);
+        return [];
+    }
 }
 
 async function getAllExecutionResults(execIds, useDataset){
@@ -53,13 +59,10 @@ async function getAllExecutionResults(execIds, useDataset){
 }
 
 Apify.main(async () => {
-    try{
-        const input = await Apify.getValue('INPUT');
-        if(!input.executionIds){
-            throw new Error('ERROR: missing "executionIds" attribute in INPUT');
-        }
-        const results = await getAllExecutionResults(input.executionIds, input.useDataset);
-        if(input.useDataset){await Apify.setValue('OUTPUT', results);}
+    const input = await Apify.getValue('INPUT');
+    if(!input.executionIds){
+        throw new Error('ERROR: missing "executionIds" attribute in INPUT');
     }
-    catch(e){throw e;}
+    const results = await getAllExecutionResults(input.executionIds, input.useDataset);
+    if(input.useDataset){await Apify.setValue('OUTPUT', results);}
 });
