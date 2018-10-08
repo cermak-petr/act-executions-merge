@@ -23,6 +23,7 @@ async function getExecutionResults(execId, useDataset){
         let total = null, offset = 0;
         while(total === null || offset < total){
             const results = await Apify.client.crawlers.getExecutionResults({executionId: execId, limit: limit, offset: offset});
+            console.dir(results);
             if(useDataset){
                 const data = processResults(results, []);
                 if(data.length > 0){await Apify.pushData(data);}
