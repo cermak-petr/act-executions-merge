@@ -53,10 +53,13 @@ async function getAllExecutionResults(execIds, useDataset){
 }
 
 Apify.main(async () => {
-    const input = await Apify.getValue('INPUT');
-    if(!input.executionIds){
-        throw new Error('ERROR: missing "executionIds" attribute in INPUT');
+    try{
+        const input = await Apify.getValue('INPUT');
+        if(!input.executionIds){
+            throw new Error('ERROR: missing "executionIds" attribute in INPUT');
+        }
+        const results = await getAllExecutionResults(input.executionIds, input.useDataset);
+        if(input.useDataset){await Apify.setValue('OUTPUT', results);}
     }
-    const results = await getAllExecutionResults(input.executionIds, input.useDataset);
-    if(input.useDataset){await Apify.setValue('OUTPUT', results);}
+    catch(e){throw e;}
 });
