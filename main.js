@@ -16,28 +16,34 @@ function processResults(results, output){
     return output;
 }
 
-async function getExecutionResults(execId){
+async function getExecutionResults(execId, useDataset){
     let output = [];
     const limit = 200;
     let total = null, offset = 0;
     while(total === null || offset + limit < total){
         const results = await Apify.client.crawlers.getExecutionResults({executionId: execId, limit: limit, offset: offset});
-        output = processResults(results, output);
+        if(useDataset){
+            const data = processResults(results, output);
+            await Apify.pushData(data)
+        }
+        else{output = processResults(results, output);}
         total = results.total;
         offset += limit;
     }
     return output;
 }
 
-async function getAllExecutionResults(execIds){
+async function getAllExecutionResults(execIds, useDataset){
     let results = [];
     const execPromises = [];
     _.each(execIds, function(eId){
         console.log('getting execution results: ' + eId);
-        const ePromise = getExecutionResults(eId);
-        ePromise.then(function(result){
-            results = results.concat(result);
-        });
+        const ePromise = getExecutionResults(eId, useDataset);
+        if(useDataset){
+            ePromise.then(function(result){
+                results = results.concat(result);
+            });
+        }
         execPromises.push(ePromise);
     });
     await Promise.all(execPromises);
@@ -51,6 +57,6 @@ Apify.main(async () => {
         console.log('ERROR: missing "executionIds" attribute in INPUT');
         return null;
     }
-    const results = await getAllExecutionResults(input.executionIds);
-    await Apify.setValue('OUTPUT', results);
+    const results = await getAllExecutionResults(input.executionIds, input.useDataset);
+    if(input.useDataset){await Apify.setValue('OUTPUT', results);}
 });
