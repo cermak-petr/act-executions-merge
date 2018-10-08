@@ -1,6 +1,6 @@
 # act-executions-merge
 
-This act merges results from multiple crawler executions into one JSON.
+This actor merges results from multiple crawler executions into one JSON.
 
 For larger result sets it is recommended to store the output in dataset.  
 That way you can also export the merged data in many different formats.  
